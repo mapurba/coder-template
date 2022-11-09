@@ -1,0 +1,61 @@
+version: 0.2
+workspace:
+  # Type indicates the provider type to use when building the workspace.
+  # It corresponds to the `kubernetes` section under `specs`.
+  type: kubernetes
+  specs:
+    kubernetes:
+      image:
+        value: index.docker.io/ubuntu:18.04
+      container-based-vm:
+        value: true
+      cpu:
+        value: 2
+      memory:
+        value: 4
+      disk:
+        value: 128
+      gpu-count:
+        value: 1
+      labels:
+        value:
+          com.coder.custom.hello: "hello"
+          com.coder.custom.world: "world"
+      annotations:
+        value:
+          - key: annotation-key
+            value: annotation-value
+  configure:
+    start:
+      value:
+        - name: "install curl"
+          command: |
+            apt update
+            apt install -y curl
+        - name: "Create organization directory"
+          command: "mkdir -p /home/coder/go/src/github.com/mapurba"
+          # Be careful with keyscans like this!
+        - name: "Add GitHub to known hosts"
+          command:
+            "sudo ssh-keyscan -H github.com >> /home/coder/.ssh/known_hosts"
+        - name: "Clone Git Project"
+          command: "git clone https://github.com/mapurba/angular-dynamic-forms.git"
+          continue-on-error: true
+          directory: /home/coder/go/src/github.com/mapurba
+        - name: "install Go binary"
+          command: "npm install"
+          directory: /home/coder/go/src/github.com/mapurba/angular-dynamic-forms
+          shell: "bash"
+          continue-on-error: true
+          
+  dev-urls:
+    value:
+      - name: MyWebsite
+        port: 3000
+        scheme: http
+        access: private
+      - name: PublicPort
+        port: 443
+        scheme: https
+        access: public
+
